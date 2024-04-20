@@ -34,10 +34,10 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     
-    # API: Users
+    # API
     path('api/users/', include('api.urls.user_urls')),
-
     path('api/files/', include('api.urls.file_urls')),
+    path('api/location-pings/', include('api.urls.location_ping_urls')),
     
     # Web App
     path('internal/', admin.site.urls), # Standard django admin app

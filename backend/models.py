@@ -17,7 +17,30 @@ from rest_framework_api_key.models import AbstractAPIKey
 # Models
 # ====================================================================================================
 
+class LocationPing(models.Model):
+    id = models.CharField(max_length=32, primary_key=True, default=generate_model_id, editable=False)
+    location_ping_id = models.CharField(editable=False, max_length=32, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    lat = models.FloatField(default=True)
+    lng = models.FloatField(default=True)
+    geocoordinate = models.CharField(max_length=128, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    accuracy = models.FloatField(default=True)
+    altitude = models.FloatField(default=True)
+    speed = models.FloatField(default=True)
+    heading = models.FloatField(default=True)
+    data = models.JSONField(null=True) # Include in all models for storing unstructured data if needed
+    config = models.JSONField(null=True) # Include in all models for storing record config data if needed
+    created_at = models.DateTimeField(auto_now_add=True) # Include in all models for when the record was created
+    status = models.CharField(max_length=10, default="active") # Include in all models for archiving records
 
+    def __str__(self):
+        return self.id
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['location_ping_id'], name='location_ping_index'),
+        ]
 
 
 # ====================================================================================================
