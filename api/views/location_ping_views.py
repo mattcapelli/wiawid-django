@@ -66,7 +66,7 @@ def get_location_pings(request):
     user = request.user
 
     # Filter location_pings based on user and status, using select_related for optimization
-    query = LocationPing.objects.select_related('created_user').filter(user=user, status='active').order_by('-created_at')
+    query = LocationPing.objects.select_related('user').filter(user=user, status='active').order_by('-created_at')
 
     # LocationPingly search filtering if applicable
     search_query = request.query_params.get('search', '').strip()
@@ -131,7 +131,7 @@ def get_location_pings(request):
 def get_location_ping(request, location_ping_id):
 
     user = request.user
-    location_ping = LocationPing.objects.select_related('created_user').filter(location_ping_id=location_ping_id, status='active').first()
+    location_ping = LocationPing.objects.select_related('user').filter(location_ping_id=location_ping_id, status='active').first()
     if location_ping:
         serializer = LocationPingSerializer(location_ping, many=False)
         return Response({'location_ping': serializer.data})
@@ -161,6 +161,7 @@ def get_location_ping(request, location_ping_id):
 def add_location_ping(request):
     
     user = request.user
+    location_ping_object = request.data
     
     valid_params = check_params(location_ping_object, [
         {'param': 'location_ping_id', 'type': 'string', 'required': False, 'length': 32},
@@ -218,6 +219,7 @@ def add_location_pings(request):
     try:
         with transaction.atomic():
             for index, location_ping_object in enumerate(location_pings_data):
+
                 valid_params = check_params(location_ping_object, [
                     {'param': 'location_ping_id', 'type': 'string', 'required': False, 'length': 32},
                     {'param': 'lat', 'type': 'float', 'required': True},
@@ -272,7 +274,7 @@ def update_location_ping(request, location_ping_id):
     user = request.user
     
     valid_params = check_params(location_ping_object, [
-        {'param': 'location_ping_id', 'type': 'string', 'required': False, 'length': 32},
+        {'param': 'location_ping_id', 'type': 'string', 'required': True, 'length': 32},
         {'param': 'lat', 'type': 'float', 'required': True},
         {'param': 'lng', 'type': 'float', 'required': True},
         {'param': 'geocoordinate', 'type': 'string', 'required': True},
@@ -288,9 +290,15 @@ def update_location_ping(request, location_ping_id):
     if valid_params['valid']:
         try:
             with transaction.atomic():
-                result = update_location_ping_record(location_ping, location_ping_object)
-            serializer = LocationPingSerializer(result['location_ping'])
-            return Response({'location_ping': serializer.data}, status=status.HTTP_200_OK)
+                location_ping_id = location_ping_object['location_ping_id']
+                location_ping = LocationPing.objects.filter(location_ping_id=location_ping_id, status='active').first()
+                if location_ping:
+                    result = update_location_ping_record(location_ping, location_ping_object)
+                    serializer = LocationPingSerializer(result['location_ping'])
+                    return Response({'location_ping': serializer.data}, status=status.HTTP_200_OK)
+                else:
+                    logger.error(f'Error updating location_ping: Location_ping does not exist.')
+                    return Response({'errors': ['Location_ping does not exist.']}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.error(f'Error updating location_ping: {e}')
             return Response({'errors': ['Failed to update location_ping.']}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -328,7 +336,7 @@ def update_location_pings(request):
         with transaction.atomic():
             for index, location_ping_object in enumerate(location_pings_data):
                 valid_params = check_params(location_ping_object, [
-                    {'param': 'location_ping_id', 'type': 'string', 'required': False, 'length': 32},
+                    {'param': 'location_ping_id', 'type': 'string', 'required': True, 'length': 32},
                     {'param': 'lat', 'type': 'float', 'required': True},
                     {'param': 'lng', 'type': 'float', 'required': True},
                     {'param': 'geocoordinate', 'type': 'string', 'required': True},
@@ -343,11 +351,19 @@ def update_location_pings(request):
 
                 if valid_params['valid']:
                     location_ping_id = location_ping_object['location_ping_id']
-                    try:
-                        result = update_location_ping_record(location_ping, location_ping_object)
-                        serializer = LocationPingSerializer(result['location_ping'])
-                        response_data['location_pings_updated'].append(serializer.data)
-                    except LocationPing.DoesNotExist:
+                    location_ping = LocationPing.objects.filter(location_ping_id=location_ping_id, status='active').first()
+                    if location_ping:
+                        try:
+                            result = update_location_ping_record(location_ping, location_ping_object)
+                            serializer = LocationPingSerializer(result['location_ping'])
+                            response_data['location_pings_updated'].append(serializer.data)
+                        except LocationPing.DoesNotExist:
+                            response_data['location_pings_not_updated'].append({
+                                'index': index,
+                                'submitted_object': location_ping_object,
+                                'errors': ['LocationPing could not be updated']
+                            })
+                    else:
                         response_data['location_pings_not_updated'].append({
                             'index': index,
                             'submitted_object': location_ping_object,
@@ -387,7 +403,7 @@ def update_location_pings(request):
 @permission_classes([IsAuthenticated])
 def archive_location_ping(request, location_ping_id):
     
-    location_ping = LocationPing.objects.select_related('created_user').filter(location_ping_id=location_ping_id, status='active').first()
+    location_ping = LocationPing.objects.select_related('user').filter(location_ping_id=location_ping_id, status='active').first()
     if location_ping:
         try:
             with transaction.atomic():
@@ -470,10 +486,12 @@ def archive_location_pings(request):
 
 def create_location_ping_record(data, user):
     try:
+
         location_ping_id = data.get('location_ping_id', randomstr())
 
         location_ping_data = {
             'location_ping_id': location_ping_id,
+            'user': user,
             'lat': data['lat'],
             'lng': data['lng'],
             'geocoordinate': data['geocoordinate'],
@@ -484,7 +502,7 @@ def create_location_ping_record(data, user):
             'data': data.get('data'),
             'config': data.get('config'),
         }
-        
+
         # Remove None values from dictionary
         location_ping_data = {k: v for k, v in location_ping_data.items() if v is not None}
 
@@ -492,7 +510,8 @@ def create_location_ping_record(data, user):
 
         # Compile the timestamp
         if 'timestamp' in data:
-            timestamp = datetime.datetime(data['year'], data['month'], data['day'], data['hour'], data['minute'], data['seconds'])
+            timestamp_data = data['timestamp']
+            timestamp = datetime.datetime(timestamp_data['year'], timestamp_data['month'], timestamp_data['day'], timestamp_data['hour'], timestamp_data['minute'], timestamp_data['second'])
             location_ping.timestamp = timestamp
             location_ping.save()
 
@@ -531,9 +550,11 @@ def update_location_ping_record(location_ping, data):
         if updated_fields:
             location_ping.save(update_fields=updated_fields)
 
+
         # Compile the timestamp
         if 'timestamp' in data:
-            timestamp = datetime.datetime(data['year'], data['month'], data['day'], data['hour'], data['minute'], data['seconds'])
+            timestamp_data = data['timestamp']
+            timestamp = datetime.datetime(timestamp_data['year'], timestamp_data['month'], timestamp_data['day'], timestamp_data['hour'], timestamp_data['minute'], timestamp_data['second'])
             location_ping.timestamp = timestamp
             location_ping.save()
 

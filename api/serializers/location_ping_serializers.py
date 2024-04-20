@@ -11,6 +11,7 @@ from backend.models import *
 class LocationPingSerializer(serializers.ModelSerializer):
 
     created_at = serializers.SerializerMethodField()
+    timestamp = serializers.SerializerMethodField()
     user = serializers.SerializerMethodField()
     
     class Meta:
@@ -29,6 +30,21 @@ class LocationPingSerializer(serializers.ModelSerializer):
             'created_at',
             'status',
         ]
+    
+    def get_timestamp(self, obj):
+        date = obj.timestamp
+        date_object = None
+        if date:
+            date_object = {
+                'year': date.year,
+                'month': date.month,
+                'day': date.day,
+                'hour': date.hour,
+                'minute': date.minute,
+                'second': date.second,
+                'timezone': timezone.get_current_timezone_name()
+            }
+        return date_object
     
     def get_created_at(self, obj):
         date = obj.created_at

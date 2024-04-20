@@ -73,9 +73,9 @@ def check_params(data, params):
 
         if param_object['type'] == 'datetime':
             try:
-                datetime.datetime(param_value['year'], param_value['month'], param_value['day'], param_value['hour'], param_value['minute'], param_value['seconds'])
+                datetime.datetime(param_value['year'], param_value['month'], param_value['day'], param_value['hour'], param_value['minute'], param_value['second'])
             except (ValueError, KeyError):
-                errors.append(f'Parameter: {param_name} - included year, month, day, hours, minutes, and seconds is not a valid date')
+                errors.append(f'Parameter: {param_name} - included year, month, day, hours, minutes, and second is not a valid date')
                 valid = False
 
         return valid
