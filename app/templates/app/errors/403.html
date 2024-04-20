@@ -1,0 +1,23 @@
+{% extends "app/base/full-screen-base.html" %}
+{% load static %}
+
+{% block header %}
+{% include 'app/base/header.html' %}
+{% endblock %}
+
+{% block content %}
+<section class="pb-10 pt-5">
+    <div class="container px-5">
+      <div class="row gx-5 justify-content-center">
+          <div class="col-lg-6">
+              <div class="text-center">
+                  <img class="img-fluid" src="{% static 'app/assets/img/illustrations/403.png' %}" alt="...">
+                  <p class="lead">You are not allowed to access this page.</p>
+              </div>
+          </div>
+      </div>
+  </div>
+</section>
+{% endblock %}
+
+

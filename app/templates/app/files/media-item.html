@@ -1,0 +1,13 @@
+{% load static %}
+{% if post_file.file.file_display_type == 'image' %}
+<div class="square-img-container m-2" id="file_{{post_file.post_file_id}}">
+    <img id="image_{{post_file.post_file_id}}" {% if post_file.file.file %}onload="loadImage('image_{{post_file.post_file_id}}', '{{ post_file.file.file.url }}')"{% endif%} data-onload-complete="false" onclick="openMediaViewer('image', '{{post_file.file.file.url}}')" src="{% if post_file.file.micro_thumbnail %}{{ post_file.file.micro_thumbnail.url }}{% elif post_file.file.thumbnail %}{{ post_file.file.thumbnail.url }}{% else %}{{post_file.file.file.url}}{% endif %}" class="img-fluid rounded square-img">
+</div>
+{% endif %}
+{% if post_file.file.file_display_type == 'video' %}
+<div id="file_{{post_file.post_file_id}}" class="m-2">
+    <video controls class="img-fluid">
+        <source src="{{post_file.file.file.url}}" type="{{post_file.file.file_type}}">
+    </video>
+</div>
+{% endif %}

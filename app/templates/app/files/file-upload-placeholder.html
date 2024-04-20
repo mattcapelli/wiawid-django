@@ -1,0 +1,17 @@
+{% load static %}
+<div class="card col-12 mb-3" id="file_upload_post_{{id}}">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="fw-400 text-dark" id="file_upload_title_{{id}}">{{original_name}}</span>
+        <span class="badge bg-primary" id="file_upload_progress_{{id}}">0%</span>
+        <div id="file_upload_loader_{{id}}" class="d-none">
+            {% include 'app/base/loader-inline.html' %}
+        </div>
+        <span class="badge bg-success d-none" id="file_upload_success_{{id}}">Complete</span>
+      </div>
+      <div class="d-flex justify-content-between align-items-center">
+        <p class="card-text mb-0" id="file_upload_size_{{id}}">File size: {{size_mb}} mb</p>
+        <p class="card-text mb-0" id="file_upload_type_{{id}}">File type: {{type}}</p>
+      </div>
+    </div>
+</div>
