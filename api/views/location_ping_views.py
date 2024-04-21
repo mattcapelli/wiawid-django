@@ -37,6 +37,9 @@ from drf_yasg import openapi
 from api.documentation.location_ping_documentation import *
 from api.documentation.common_elements import error_response, success_response
 
+# Auth
+from api.views.utils import IsAuthenticatedOrHasAPIKey
+
 
 #-----------------------------------------------------------------------------------------------------------------------------
 # Getting location_pings
@@ -60,7 +63,7 @@ from api.documentation.common_elements import error_response, success_response
     ]
 )
 @api_view(['GET'])
-@permission_classes([IsAuthenticated]) # Auth only, no API key
+@permission_classes([IsAuthenticatedOrHasAPIKey]) # Auth only, no API key
 def get_location_pings(request):
     
     user = request.user
@@ -127,7 +130,7 @@ def get_location_pings(request):
     manual_parameters=[]
 )
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticatedOrHasAPIKey])
 def get_location_ping(request, location_ping_id):
 
     user = request.user
@@ -157,7 +160,7 @@ def get_location_ping(request, location_ping_id):
     }
 )
 @api_view(['POST'])
-@permission_classes([IsAuthenticated]) # Auth only, no API key
+@permission_classes([IsAuthenticatedOrHasAPIKey]) # Auth only, no API key
 def add_location_ping(request):
     
     user = request.user
@@ -204,7 +207,7 @@ def add_location_ping(request):
     }
 )
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticatedOrHasAPIKey])
 def add_location_pings(request):
     data = request.data
     
@@ -268,7 +271,7 @@ def add_location_pings(request):
     }
 )
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticatedOrHasAPIKey])
 def update_location_ping(request, location_ping_id):
     location_ping_object = request.data
     user = request.user
@@ -320,7 +323,7 @@ def update_location_ping(request, location_ping_id):
     }
 )
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticatedOrHasAPIKey])
 def update_location_pings(request):
     data = request.data
 
@@ -400,7 +403,7 @@ def update_location_pings(request):
     }
 )
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticatedOrHasAPIKey])
 def archive_location_ping(request, location_ping_id):
     
     location_ping = LocationPing.objects.select_related('user').filter(location_ping_id=location_ping_id, status='active').first()
@@ -434,7 +437,7 @@ def archive_location_ping(request, location_ping_id):
     }
 )
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticatedOrHasAPIKey])
 def archive_location_pings(request):
     data = request.data
 

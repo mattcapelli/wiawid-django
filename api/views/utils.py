@@ -13,6 +13,34 @@ logger = logging.getLogger('WiaWid')
 from rest_framework import permissions
 from rest_framework.exceptions import AuthenticationFailed
 
+class IsAuthenticatedOrHasAPIKey(permissions.BasePermission):
+    """
+    Allows access to authenticated users or users with a valid API key.
+    """
+
+    def has_permission(self, request, view):
+        # Check if user is authenticated via JWT
+        if request.user and request.user.is_authenticated:
+            return True
+
+        # Check for API Key in the Authorization header
+        '''
+        key_request = request.META.get("HTTP_AUTHORIZATION")
+        if key_request:
+            try:
+                key = key_request.split()[1]
+                api_key = InvestigationAPIKey.objects.get_from_key(key)
+                if api_key:
+                    # Attach the user associated with the API key to the request
+                    request.user = api_key.user
+                    return True
+            except InvestigationAPIKey.DoesNotExist:
+                pass  # API Key is not valid
+        '''
+        
+        # Neither JWT nor API Key is valid
+        return False
+
 
 def check_params(data, params):
     valid = True

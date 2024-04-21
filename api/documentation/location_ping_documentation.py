@@ -6,7 +6,14 @@ from api.documentation.common_elements import date_time_properties
 def base_location_ping_schema(required_fields=[], include_fields=None):
     all_properties = {
         'location_ping_id': openapi.Schema(type=openapi.TYPE_STRING),
-        'name': openapi.Schema(type=openapi.TYPE_STRING),
+        'lat': openapi.Schema(type=openapi.TYPE_NUMBER, format='float'),
+        'lng': openapi.Schema(type=openapi.TYPE_NUMBER, format='float'),
+        'geocoordinate': openapi.Schema(type=openapi.TYPE_STRING),
+        'altitude': openapi.Schema(type=openapi.TYPE_NUMBER, format='float'),
+        'accuracy': openapi.Schema(type=openapi.TYPE_NUMBER, format='float'),
+        'speed': openapi.Schema(type=openapi.TYPE_NUMBER, format='float'),
+        'heading': openapi.Schema(type=openapi.TYPE_NUMBER, format='float'),
+        'timestamp': openapi.Schema(type=openapi.TYPE_OBJECT),
         # Add other fields here
     }
     properties = {k: v for k, v in all_properties.items() if include_fields is None or k in include_fields}
