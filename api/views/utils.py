@@ -50,7 +50,7 @@ def check_params(data, params):
     type_mapping = {
         'string': str,
         'integer': int,
-        'float': float,
+        'float': (float, int),
         'object_list': list,
         'string_list': list,
         'boolean': bool,
